@@ -1,6 +1,7 @@
 from pathlib import Path
 from django.contrib import admin, messages
 from django.core.files import File
+from django.utils.html import format_html
 from .models import Choice, Conversation, Question
 from .tts import create_audio
 
@@ -34,7 +35,22 @@ class ConversationAdmin(admin.ModelAdmin):
     list_filter = ("is_published",)
     search_fields = ("title", "description", "script")
     prepopulated_fields = {"slug": ("title",)}
+    fields = ("title", "slug", "description", "script", "audio", "audio_preview", "is_published")
+    readonly_fields = ("audio_preview",)
     actions = [generate_audio]
+
+    @admin.display(description="Dengarkan audio")
+    def audio_preview(self, obj):
+        if not obj or not obj.audio:
+            return "Audio belum tersedia."
+        return format_html(
+            '<audio controls preload="metadata" '
+            'style="display: block; width: clamp(260px, 50vw, 520px); max-width: 70vw;">'
+            '<source src="{}" type="audio/wav">'
+            "Browser Anda tidak mendukung pemutar audio."
+            "</audio>",
+            obj.audio.url,
+        )
 
     @admin.display(description="Soal")
     def question_count(self, obj): return obj.questions.count()
