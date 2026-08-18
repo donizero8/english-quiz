@@ -1,0 +1,7 @@
+{% extends "quiz/base.html" %}{% block title %}{{ conversation.title }}{% endblock %}
+{% block content %}<a class="back" href="/">← All exercises</a><section class="quiz-head"><p class="kicker">LISTENING EXERCISE</p><h1>{{ conversation.title }}</h1><p>{{ conversation.description }}</p>
+{% if conversation.audio %}<div class="audio-box"><div class="audio-visual"><div class="audio-icon">♪</div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div><strong>Conversation audio</strong><small>Listen carefully. You can replay the audio.</small><audio controls src="{{ conversation.audio.url }}"></audio></div></div>{% else %}<p class="warning">Audio has not been generated yet.</p>{% endif %}</section>
+<form id="quiz-form" data-submit="{% url 'submit-quiz' conversation.slug %}">{% csrf_token %}
+{% for question in conversation.questions.all %}<fieldset data-question="{{ question.id }}"><legend><span>{{ forloop.counter }}</span>{{ question.text }}</legend><div class="choices">{% for choice in question.choices.all %}<label data-choice="{{ choice.id }}"><input type="radio" name="q-{{ question.id }}" value="{{ choice.id }}"><i></i>{{ choice.text }}</label>{% endfor %}</div><p class="explanation"></p></fieldset>{% endfor %}
+<button type="submit">CHECK ANSWERS <span>→</span></button><div id="score" hidden></div></form>{% endblock %}
+{% block scripts %}<script src="/static/quiz.js?v=4"></script>{% endblock %}

@@ -1,0 +1,15 @@
+services:
+  tts-app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - tts-data:/app/data
+      - tts-audio:/app/generated
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  tts-data:
+  tts-audio:

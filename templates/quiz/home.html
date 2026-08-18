@@ -1,0 +1,4 @@
+{% extends "quiz/base.html" %}{% block title %}English Listening Lab{% endblock %}
+{% block content %}<section class="hero"><p class="kicker">ENGLISH LISTENING QUIZ</p><h1>Train your ears.<br><em>Understand more.</em></h1><p>Listen to short conversations and choose the best answer.</p></section>
+<section class="library"><div class="section-title"><h2>Available exercises</h2><span>{{ conversations|length }} lessons</span></div>
+<div class="cards">{% for item in conversations %}<a class="card" href="{% url 'quiz-detail' item.slug %}"><span class="number">0{{ forloop.counter }}</span><div><h3>{{ item.title }}</h3><p>{{ item.description }}</p><small>{{ item.questions.count }} questions · Single answer</small></div><b>START →</b></a>{% empty %}<p>No published exercises yet.</p>{% endfor %}</div></section>{% endblock %}
