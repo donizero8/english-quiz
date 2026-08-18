@@ -9,7 +9,6 @@ This repository is a Docker-first Django listening-quiz application with local P
 - `templates/quiz/`: public quiz and shared page templates.
 - `static/`: frontend CSS and JavaScript.
 - `Dockerfile` and `docker-compose.yml`: application runtime, voice-model download, SQLite/audio volumes, and startup commands.
-- `app/`: legacy FastAPI prototype; do not extend it unless it is intentionally being removed or migrated.
 
 Place Django tests in `quiz/tests/` or modules named `test_*.py`.
 
