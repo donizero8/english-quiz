@@ -10,7 +10,7 @@ This is a Docker-first Django listening-quiz application with local Piper TTS.
 - `static/`: public frontend CSS and JavaScript.
 - `Dockerfile` and `docker-compose.yml`: runtime, Piper model download, persistent SQLite/audio volumes, and startup.
 
-Keep speech parsing, punctuation rules, synthesis, and WAV assembly in `quiz/tts.py`.
+Keep the allowed voice registry in `quiz/voices.py`. Keep speech parsing, punctuation rules, per-actor voice/speed selection, synthesis, and WAV assembly in `quiz/tts.py`. Conversation speed values are intuitive multipliers; convert them to Piper with `length_scale = 1 / speed`.
 
 ## Build, Test, and Development Commands
 
@@ -40,7 +40,7 @@ Woman: How can I reserve a room?
 
 ## Testing Guidelines
 
-Use Django `TestCase` or `SimpleTestCase`; name tests `test_<expected_behavior>`. Cover model validation, scoring, publishing, dialogue parsing, punctuation splitting, and authenticated Admin/API behavior. Mock synthesis in unit tests. Use a Docker smoke test for real Piper/WAV integration because model inference is slower. Existing punctuation tests live in `quiz/tests/test_tts.py`.
+Use Django `TestCase` or `SimpleTestCase`; name tests `test_<expected_behavior>`. Cover model validation, scoring, publishing, dialogue parsing, punctuation splitting, voice-speed conversion, and authenticated Admin/API behavior. Mock synthesis in unit tests. Use a Docker smoke test for real Piper/WAV integration because model inference is slower. TTS and model tests live in `quiz/tests/`.
 
 ## Commit & Pull Request Guidelines
 

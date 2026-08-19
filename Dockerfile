@@ -6,6 +6,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p /app/voices \
     && python -m piper.download_voices --data-dir /app/voices \
         en_US-ryan-medium en_US-amy-medium
+RUN python -m piper.download_voices --data-dir /app/voices \
+        en_US-hfc_male-medium en_US-hfc_female-medium
 COPY manage.py .
 COPY config ./config
 COPY quiz ./quiz

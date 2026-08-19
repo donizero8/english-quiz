@@ -5,10 +5,9 @@ import wave
 from pathlib import Path
 from django.conf import settings
 
-VOICE_CONFIG = {
-    "MAN": {"model": "en_US-ryan-medium", "length_scale": 1.05},
-    "WOMAN": {"model": "en_US-amy-medium", "length_scale": 1.0},
-}
+from .voices import DEFAULT_VOICE_MODELS, VOICE_MODELS
+
+DEFAULT_VOICE_SPEEDS = {"MAN": 1.0, "WOMAN": 1.10}
 LINE_PATTERN = re.compile(r"^(Man|Woman|Voice\s+[AB])\s*:\s*(.+)$", re.IGNORECASE)
 PUNCTUATION_PATTERN = re.compile(
     r"\.{3}|[.!?;:,]|(?<=[A-Za-z])[-–—](?=[A-Za-z])"
@@ -57,11 +56,20 @@ def split_by_punctuation(sentence):
         chunks.append((remainder, 0))
     return chunks or [(sentence.strip(), 0)]
 
-def synthesize(speaker, sentence, output):
-    config = VOICE_CONFIG[speaker]
-    model = settings.PIPER_VOICE_DIR / f'{config["model"]}.onnx'
+def speed_to_length_scale(speed):
+    speed = float(speed)
+    if speed <= 0:
+        raise ValueError("Voice speed harus lebih besar dari 0.")
+    return round(1 / speed, 4)
+
+
+def synthesize(speaker, sentence, output, speed=1.0, voice_model=None):
+    voice_model = voice_model or DEFAULT_VOICE_MODELS[speaker]
+    if voice_model not in VOICE_MODELS[speaker]:
+        raise ValueError(f'Voice "{voice_model}" tidak valid untuk {speaker.title()}.')
+    model = settings.PIPER_VOICE_DIR / f"{voice_model}.onnx"
     command = ["python", "-m", "piper", "--model", str(model), "--config", f"{model}.json",
-               "--output_file", str(output), "--length-scale", str(config["length_scale"]), "--", sentence]
+               "--output_file", str(output), "--length-scale", str(speed_to_length_scale(speed)), "--", sentence]
     proc = subprocess.run(command, capture_output=True, timeout=90)
     if proc.returncode: raise RuntimeError(proc.stderr.decode(errors="replace"))
 
@@ -81,8 +89,10 @@ def combine(parts, pauses, output):
     with wave.open(str(output), "wb") as target:
         target.setparams(params); target.writeframes(b"".join(frames))
 
-def create_audio(script, output):
+def create_audio(script, output, voice_speeds=None, voice_models=None):
     dialogue = parse_dialogue(script)
+    voice_speeds = {**DEFAULT_VOICE_SPEEDS, **(voice_speeds or {})}
+    voice_models = {**DEFAULT_VOICE_MODELS, **(voice_models or {})}
     with tempfile.TemporaryDirectory() as folder:
         parts = []
         pauses = []
@@ -90,7 +100,13 @@ def create_audio(script, output):
             chunks = split_by_punctuation(sentence)
             for chunk, pause_ms in chunks:
                 part = Path(folder) / f"{len(parts)}.wav"
-                synthesize(speaker, chunk, part)
+                synthesize(
+                    speaker,
+                    chunk,
+                    part,
+                    voice_speeds[speaker],
+                    voice_models[speaker],
+                )
                 parts.append(part)
                 pauses.append(pause_ms)
             if dialogue_index < len(dialogue) - 1:

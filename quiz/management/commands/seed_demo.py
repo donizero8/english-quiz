@@ -34,7 +34,13 @@ class Command(BaseCommand):
             for order, (text, options, correct, explanation) in enumerate(data, 1):
                 question = Question.objects.create(conversation=conversation, text=text, explanation=explanation, order=order)
                 for index, option in enumerate(options): Choice.objects.create(question=question, text=option, is_correct=index == correct, order=index)
-            output = Path("/tmp/demo.wav"); create_audio(conversation.script, output)
+            output = Path("/tmp/demo.wav")
+            create_audio(
+                conversation.script,
+                output,
+                conversation.voice_speeds,
+                conversation.voice_models,
+            )
             with output.open("rb") as source: conversation.audio.save("conversation-demo.wav", File(source), save=True)
             output.unlink(missing_ok=True)
             self.stdout.write(self.style.SUCCESS("Demo listening quiz created."))

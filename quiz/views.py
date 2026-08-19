@@ -40,7 +40,13 @@ def generate_conversation_audio(request, pk):
     conversation = get_object_or_404(Conversation, pk=pk)
     output = settings.MEDIA_ROOT / "conversations" / f"conversation-{pk}.wav"
     output.parent.mkdir(parents=True, exist_ok=True)
-    try: lines = create_audio(conversation.script, output)
+    try:
+        lines = create_audio(
+            conversation.script,
+            output,
+            conversation.voice_speeds,
+            conversation.voice_models,
+        )
     except (ValueError, RuntimeError) as error: return JsonResponse({"detail": str(error)}, status=422)
     conversation.audio.name = f"conversations/conversation-{pk}.wav"; conversation.save(update_fields=["audio"])
     return JsonResponse({"audio_url": conversation.audio.url, "lines": lines})
